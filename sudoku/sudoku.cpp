@@ -1,6 +1,8 @@
 #include <utility>
 #include <vector>
 #include <iostream>
+#include <stdlib.h>
+
 using namespace std;
 
 //juez online http://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=11&page=show_problem&problem=930
@@ -68,26 +70,34 @@ bool resolver(Tablero& p, int n)
         for (int j = 0; j < n*n; j++) {
             if (p[i][j] == 0) {
                 vacia = Coord(i,j);
+                break;
             }
         }
+        if (vacia.first != -1 && vacia.second != -1) {
+            break;
+        }
     }
-
     return resolverAux(p, n, vacia);
 }
 
 bool resolverAux(Tablero& p, int n, Coord& c)
 {
-    // busco la siguient/e celda vacia
+    // busco la siguiente celda vacia
     Coord vacia(-1,-1);
     for (int i = c.first; i < n*n; i++) {
-        for (int j = c.second; j < n*n; j++) {
+        for (int j = 0; j < n*n; j++) {
             if (p[i][j] == 0) {
                 vacia = Coord(i,j);
+                break;
             }
+        }
+        if (vacia.first != -1 && vacia.second != -1) {
+            break;
         }
     }
     // si no hay ninguna celda vacia, el tablero es una solucion
     if (vacia.first == -1 && vacia.second == -1) {
+        cout << "gotcha";
         return true;
     }
 
@@ -95,15 +105,17 @@ bool resolverAux(Tablero& p, int n, Coord& c)
     // antes de llamar a resolver con el nuevo valor, me fijo que sea valida
     for (int i = 1; i <= n*n; i++) {
         p[vacia.first][vacia.second] = i;
+        //cout << "\nintento " << i << " en la celda: " << vacia.first << ", " << vacia.second;
         
         // block
-        int block_y = vacia.second % n;
-        int block_x = vacia.first % n;
+        int block_y = vacia.second / n;
+        int block_x = vacia.first / n;
         bool repetido = false;
-        for (int bx = block_x * n; bx < n; bx++) {
-            for (int by = block_y * n; by < n; by++ ) {
+        for (int bx = block_x * n; bx < block_x * n + n; bx++) {
+            for (int by = block_y * n; by < block_y * n + n; by++ ) {
                 if (p[bx][by] == i && bx != vacia.first && by != vacia.second) {
                     repetido = true;
+                    //cout << " repite en el bloque";
                 }
                     
             }
@@ -113,12 +125,14 @@ bool resolverAux(Tablero& p, int n, Coord& c)
         for (int j = 0; j < n*n; j++) {
             if (p[j][vacia.second] == i && j != vacia.first) {
                 repetido = true;
+                //cout << " repite en la columna"; // se imprime dado vuelta
             }
         }
         // colum
         for (int j = 0; j < n*n; j++) {
             if (p[vacia.first][j] == i && j != vacia.second) {
                 repetido = true;
+                //cout << " repite en la fila"; // se imprime dado vuelta
             }
         }
 
@@ -126,10 +140,15 @@ bool resolverAux(Tablero& p, int n, Coord& c)
             continue;
         }
 
+        //cout << "\npongo " << i << " en la celda: " << vacia.first << ", " << vacia.second;
+        //system("clear"); // clear console
+        //mostrar(p);
+
         if (resolverAux(p, n, vacia)) {
             return true;
         }
     }
+    p[vacia.first][vacia.second] = 0;
     return false;
 }
 
